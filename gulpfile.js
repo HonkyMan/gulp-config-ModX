@@ -25,7 +25,7 @@ let config = {
 	},
 	src:		'./src',
 	css: {
-		libs: 		'/preassets/style/libs/**/*.css',
+		libs: 		'/preassets/style/**/*.css',
 		watch: 		'/preassets/style/**/*.less',
 		src: 		'/preassets/style/style.less',
 		dest: 		'/assets/style'
@@ -40,9 +40,13 @@ let config = {
 		src: 		'/preassets/images/**/*',
 		dest: 		'/assets/images/'
 	},
+	gallery: {
+		src: 		'/preassets/gallery/**/*',
+		dest: 		'/assets/gallery'
+	},
 	font: {
-		src: '/preassets/fonts/**/*',
-		dest: '/assets/fonts'
+		src: 	'/preassets/fonts/**/*',
+		dest: 	'/assets/fonts'
 	}
 }
 
@@ -73,9 +77,8 @@ gulp.task('styles', function(){
 })
 gulp.task('browserSync', function() {
     browserSync.init({
-        server: {
-            baseDir: config.src
-        }
+		proxy: "u700079757",
+		notify: false
     });
 });
 
@@ -89,7 +92,16 @@ gulp.task('scripts', function() {
 		.pipe(rename({suffix: '.min'})) 
 		.pipe(gulp.dest(config.src + config.js.dest))
 });
-
+gulp.task('gallery-compress', function(){
+	gulp.src(config.src + config.gallery.src)
+	.pipe(cache(imagemin({
+		interlaced: true,
+		progressive: true,
+		svgoPlugins: [{removeViewBox: false}],
+		use: [pngquant()]
+	})))
+	.pipe(gulp.dest(config.src + config.gallery.dest))
+})
 gulp.task('img-compress', function(){
 	gulp.src(config.src + config.img.src)
         .pipe(cache(imagemin({
@@ -126,7 +138,7 @@ gulp.task('watch', ['img-compress', 'fonts','browserSync'], function(){
 })
 /////////////////////
 
-gulp.task('build', ['styles', 'scripts', 'img-compress', 'del-release'],function(){
+gulp.task('build', ['styles', 'scripts', 'img-compress', 'fonts', 'del-release'],function(){
 	var styles 	= gulp.src(config.src + config.css.dest + '/**/*')
 					.pipe(gulp.dest(config.release.current + config.release.styles));
 	var scripts = gulp.src(config.src + config.js.dest + '/**/*')
@@ -135,7 +147,7 @@ gulp.task('build', ['styles', 'scripts', 'img-compress', 'del-release'],function
 					.pipe(gulp.dest(config.release.current + config.release.images))
 	var html 	= gulp.src(config.src + '/*.html')
 					.pipe(gulp.dest(config.release.current));
-	var fonts	= gulp.src(config.src + config.font.src + '/**/*')
+	var fonts	= gulp.src(config.src + config.font.dest + '/**/*')
 					.pipe(gulp.dest(config.release.current + config.release.fonts))
 })
 
